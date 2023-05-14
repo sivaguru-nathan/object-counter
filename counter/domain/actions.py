@@ -13,17 +13,27 @@ class CountDetectedObjects:
 
     def execute(self, image, threshold) -> CountResponse:
         predictions = self.__find_valid_predictions(image, threshold)
-        object_counts = count(predictions)
-        self.__object_count_repo.update_values(object_counts)
-        total_objects = self.__object_count_repo.read_values()
-        return CountResponse(current_objects=object_counts, total_objects=total_objects)
+        if type(predictions)!=str:
+            
+            object_counts = count(predictions)
+            self.__object_count_repo.update_values(object_counts)
+            total_objects = self.__object_count_repo.read_values()
+            return CountResponse(current_objects=object_counts, total_objects=total_objects)
+        else:
+            return predictions
 
     def __find_valid_predictions(self, image, threshold):
         predictions = self.__object_detector.predict(image)
-        self.__debug_image(image, predictions, "all_predictions.jpg")
-        valid_predictions = list(over_threshold(predictions, threshold=threshold))
-        self.__debug_image(image, valid_predictions, f"valid_predictions_with_threshold_{threshold}.jpg")
-        return valid_predictions
+        if predictions:
+            try:
+                self.__debug_image(image, predictions, "all_predictions.jpg")
+                valid_predictions = list(over_threshold(predictions, threshold=threshold))
+                self.__debug_image(image, valid_predictions, f"valid_predictions_with_threshold_{threshold}.jpg")
+                return valid_predictions
+            except Exception as e:
+                return str(e)
+        else:
+            return "Model Server Error"
 
     @staticmethod
     def __debug_image(image, predictions, image_name):

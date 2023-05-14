@@ -7,6 +7,7 @@ from PIL import Image
 
 from counter.domain.models import Prediction, Box
 from counter.domain.ports import ObjectDetector
+from counter.domain.api import RestApi
 
 
 class FakeObjectDetector(ObjectDetector):
@@ -22,14 +23,19 @@ class FakeObjectDetector(ObjectDetector):
 class TFSObjectDetector(ObjectDetector):
     def __init__(self, host, port, model):
         self.url = f"http://{host}:{port}/v1/models/{model}:predict"
+        self.api = RestApi(self.url,"post")
         self.classes_dict = self.__build_classes_dict()
 
     def predict(self, image: BinaryIO) -> List[Prediction]:
         np_image = self.__to_np_array(image)
         predict_request = '{"instances" : %s}' % np.expand_dims(np_image, 0).tolist()
-        response = requests.post(self.url, data=predict_request)
-        predictions = response.json()['predictions'][0]
-        return self.__raw_predictions_to_domain(predictions)
+        
+        response = self.api(data=predict_request)
+        print(response)
+        if response!=None:
+            predictions = response['predictions'][0]
+            return self.__raw_predictions_to_domain(predictions)
+        
 
     @staticmethod
     def __build_classes_dict():

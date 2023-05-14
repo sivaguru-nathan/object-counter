@@ -1,0 +1,69 @@
+version: '3.8'
+services:
+
+  app:
+    build: .
+    image: object_counter
+    ports:
+    - "5000:5000"
+    volumes:
+    - .:/object_counter
+    environment:
+    - TFS_HOST=tf-serving
+    - TFS_PORT=${TFS_PORT}
+    - MODEL_NAME=${MODEL_NAME}
+    - MONGO_HOST=mongo
+    - MONGO_PORT=${MONGO_PORT}
+    - MONGO_DB=${MONGO_DB}
+    - MONGO_USERNAME=${MONGO_USERNAME}
+    - MONGO_PASSWORD=${MONGO_PASSWORD}
+    - POSTGRES_HOST=postgres
+    - POSTGRES_USER=${POSTGRES_USER}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    - POSTGRES_DB=${POSTGRES_DB}
+
+    depends_on:
+    - mongo
+    - postgres
+    - tf-serving
+
+  tf-serving:
+    image: tensorflow/serving
+    ports:
+      - 8500:8500
+      - ${TFS_PORT}:8501
+    environment:
+      - MODEL_NAME=${MODEL_NAME} 
+      - OMP_NUM_THREADS=${OMP_NUM_THREADS} 
+      - TENSORFLOW_INTER_OP_PARALLELISM=${TENSORFLOW_INTER_OP_PARALLELISM} 
+      - TENSORFLOW_INTRA_OP_PARALLELISM=${TENSORFLOW_INTRA_OP_PARALLELISM}
+      - MODEL_BASE_PATH=${MODEL_BASE_PATH}
+    volumes:
+      - ${LOCAL_MODEL_PATH}:${MODEL_BASE_PATH}
+
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+      - mongo-configdb:/data/configdb
+    ports:
+      - "${MONGO_PORT}:27017"
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+volumes:
+  mongo-data:
+  mongo-configdb:
+  postgres_data:

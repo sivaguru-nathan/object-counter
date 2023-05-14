@@ -5,7 +5,6 @@ from pymongo import MongoClient
 from counter.domain.models import ObjectCount
 from counter.domain.ports import ObjectCountRepo
 
-
 class CountInMemoryRepo(ObjectCountRepo):
 
     def __init__(self):
@@ -29,13 +28,18 @@ class CountInMemoryRepo(ObjectCountRepo):
 
 class CountMongoDBRepo(ObjectCountRepo):
 
-    def __init__(self, host, port, database):
+    def __init__(self, host, port, database,user_name,password):
         self.__host = host
         self.__port = port
         self.__database = database
+        self.__username=user_name
+        self.__password=password
+        
 
     def __get_counter_col(self):
-        client = MongoClient(self.__host, self.__port)
+        url=f'mongodb://{self.__username}:{self.__password}@{self.__host}:{self.__port}'
+        client = MongoClient(url)
+
         db = client[self.__database]
         counter_col = db.counter
         return counter_col
