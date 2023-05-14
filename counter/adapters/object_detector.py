@@ -27,6 +27,9 @@ class TFSObjectDetector(ObjectDetector):
         self.classes_dict = self.__build_classes_dict()
 
     def predict(self, image: BinaryIO) -> List[Prediction]:
+        image.seek(0)
+        data=image.read()
+        print("---data--len--",len(data))
         np_image = self.__to_np_array(image)
         predict_request = '{"instances" : %s}' % np.expand_dims(np_image, 0).tolist()
         
@@ -58,6 +61,39 @@ class TFSObjectDetector(ObjectDetector):
             detection_score = raw_predictions['detection_scores'][i]
             detection_class = raw_predictions['detection_classes'][i]
             class_name = self.classes_dict[detection_class]
+            predictions.append(Prediction(class_name=class_name, score=detection_score, box=box))
+        print("-----------------",predictions)
+        return predictions
+    
+class TorchObjectDetector(ObjectDetector):
+    def __init__(self, host, port, model):
+        self.url = f"http://{host}:{port}/predictions/{model}"
+        self.api = RestApi(self.url,"post")
+        self.classes_dict = self.__build_classes_dict()
+
+    def predict(self, image: BinaryIO) -> List[Prediction]:
+        image.seek(0)
+        response = self.api(files={"data":image})
+        if response!=None:
+            predictions = response
+            return self.__raw_predictions_to_domain(predictions)
+        
+
+    @staticmethod
+    def __build_classes_dict():
+        with open('counter/adapters/mscoco_label_map.json') as json_file:
+            labels = json.load(json_file)
+            return {label['id']: label['display_name'] for label in labels}
+
+    def __raw_predictions_to_domain(self, raw_predictions: dict) -> List[Prediction]:
+        
+        predictions = []
+        for obj in raw_predictions:
+            detection_class=list(set(obj.keys())-set(["score"]))[0]
+            class_name=self.classes_dict[int(detection_class)]
+            detection_box = obj[detection_class]
+            box = Box(xmin=detection_box[0], ymin=detection_box[1], xmax=detection_box[2], ymax=detection_box[3])
+            detection_score = obj["score"]
             predictions.append(Prediction(class_name=class_name, score=detection_score, box=box))
         print("-----------------",predictions)
         return predictions

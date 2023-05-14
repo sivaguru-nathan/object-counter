@@ -12,6 +12,9 @@ services:
     - TFS_HOST=tf-serving
     - TFS_PORT=${TFS_PORT}
     - TF_MODEL_NAME=${TF_MODEL_NAME}
+    - PT_HOST=192.168.29.85
+    - PT_PORT=${PT_PORT}
+    - PT_MODEL_NAME=${PT_MODEL_NAME}
     - MONGO_HOST=mongo
     - MONGO_PORT=${MONGO_PORT}
     - MONGO_DB=${MONGO_DB}
@@ -24,12 +27,14 @@ services:
     - POSTGRES_DB=${POSTGRES_DB}
     - ENV=${ENV}
     - DB=${DB}
+    - SERVER=${SERVER}
     - PYTHONUNBUFFERED=1
 
     depends_on:
     - mongo
     - postgres
     - tf-serving
+    - torch-serving
 
   tf-serving:
     image: tensorflow/serving

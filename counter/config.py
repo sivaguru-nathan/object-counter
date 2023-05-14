@@ -1,7 +1,7 @@
 import os
 
 from counter.adapters.count_repo import CountMongoDBRepo, CountInMemoryRepo, CountPostgresRepo
-from counter.adapters.object_detector import TFSObjectDetector, FakeObjectDetector
+from counter.adapters.object_detector import TFSObjectDetector, FakeObjectDetector,TorchObjectDetector
 from counter.domain.actions import CountDetectedObjects
 
 tfs_host = os.environ.get('TFS_HOST', 'localhost')
@@ -22,22 +22,30 @@ postgres_username=os.environ.get('POSTGRES_USERNAME', 'admin')
 postgres_password=os.environ.get('POSTGRES_PASSWORD', 'admin')
 
 
+
 def dev_count_action(*args) -> CountDetectedObjects:
     return CountDetectedObjects(FakeObjectDetector(), CountInMemoryRepo())
 
 
-def prod_count_action(db) -> CountDetectedObjects:
+def prod_count_action(db,server) -> CountDetectedObjects:
     if db=="mongo":
         obj= CountMongoDBRepo(host=mongo_host, port=mongo_port, database=mongo_db, user_name=mongo_username,password=mongo_password)
     elif db=="postgres":
         obj= CountPostgresRepo(host=postgres_host, port=postgres_port, database=postgres_db, user_name=postgres_username,password=postgres_password)
     else:
-        raise "Unknown DB Specifications"
-    return CountDetectedObjects(TFSObjectDetector(tfs_host, tfs_port, tf_model_name),
+        raise "Unknown DB Specifications Either mongo or postgres"
+    if server=="tf":
+        detector=TFSObjectDetector(tfs_host, tfs_port, tf_model_name)
+    elif server=="torch":
+        detector=TorchObjectDetector(pt_host, pt_port, pt_model_name)
+    else:
+        raise "Unknown Server Specifications Either torch or tf"
+    return CountDetectedObjects(detector,
                                obj)
 
 def get_count_action() -> CountDetectedObjects:
     env = os.environ.get('ENV', 'dev')
     db = os.environ.get('DB', 'mongo')
+    server =os.environ.get('SERVER', 'torch')
     count_action_fn = f"{env}_count_action"
-    return globals()[count_action_fn](db)
+    return globals()[count_action_fn](db,server)
