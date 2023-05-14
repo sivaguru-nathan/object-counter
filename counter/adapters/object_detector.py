@@ -59,4 +59,5 @@ class TFSObjectDetector(ObjectDetector):
             detection_class = raw_predictions['detection_classes'][i]
             class_name = self.classes_dict[detection_class]
             predictions.append(Prediction(class_name=class_name, score=detection_score, box=box))
+        print("-----------------",predictions)
         return predictions

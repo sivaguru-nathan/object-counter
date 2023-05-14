@@ -11,7 +11,7 @@ services:
     environment:
     - TFS_HOST=tf-serving
     - TFS_PORT=${TFS_PORT}
-    - MODEL_NAME=${MODEL_NAME}
+    - TF_MODEL_NAME=${TF_MODEL_NAME}
     - MONGO_HOST=mongo
     - MONGO_PORT=${MONGO_PORT}
     - MONGO_DB=${MONGO_DB}
@@ -37,14 +37,24 @@ services:
       - 8500:8500
       - ${TFS_PORT}:8501
     environment:
-      - MODEL_NAME=${MODEL_NAME} 
-      - OMP_NUM_THREADS=${OMP_NUM_THREADS} 
-      - TENSORFLOW_INTER_OP_PARALLELISM=${TENSORFLOW_INTER_OP_PARALLELISM} 
-      - TENSORFLOW_INTRA_OP_PARALLELISM=${TENSORFLOW_INTRA_OP_PARALLELISM}
-      - MODEL_BASE_PATH=${MODEL_BASE_PATH}
+      - MODEL_NAME=${TF_MODEL_NAME} 
+      - OMP_NUM_THREADS=${TF_OMP_NUM_THREADS} 
+      - TENSORFLOW_INTER_OP_PARALLELISM=${TF_TENSORFLOW_INTER_OP_PARALLELISM} 
+      - TENSORFLOW_INTRA_OP_PARALLELISM=${TF_TENSORFLOW_INTRA_OP_PARALLELISM}
+      - MODEL_BASE_PATH=${TF_MODEL_BASE_PATH}
     volumes:
-      - ${LOCAL_MODEL_PATH}:${MODEL_BASE_PATH}
+      - ${TF_LOCAL_MODEL_PATH}:${TF_MODEL_BASE_PATH}
 
+  torch-serving:
+    image: pytorch/torchserve:latest
+    ports:
+      - "${PT_PORT}:8080"
+      - "8081:8081"
+    volumes:
+      - ${PT_LOCAL_MODEL_PATH}:${PT_MODEL_BASE_PATH}
+
+    command: torchserve --start --model-store ${PT_MODEL_BASE_PATH}/${PT_MODEL_NAME} --models ${PT_MODEL_NAME}=${PT_MODEL_NAME}.mar --ts-config ${PT_CONFIG}
+    
   mongo:
     image: mongo
     environment:

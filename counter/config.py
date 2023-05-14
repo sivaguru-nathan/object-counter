@@ -6,10 +6,13 @@ from counter.domain.actions import CountDetectedObjects
 
 tfs_host = os.environ.get('TFS_HOST', 'localhost')
 tfs_port = os.environ.get('TFS_PORT', 8501)
+pt_host = os.environ.get('PT_HOST', 'localhost')
+pt_port = os.environ.get('PT_PORT', 8080)
 mongo_host = os.environ.get('MONGO_HOST', 'localhost')
 mongo_port = os.environ.get('MONGO_PORT', 27017)
 mongo_db = os.environ.get('MONGO_DB', 'prod_counter')
-model_name=os.environ.get('MODEL_NAME', 'saved_models')
+tf_model_name=os.environ.get('TF_MODEL_NAME', 'saved_models')
+pt_model_name=os.environ.get('PT_MODEL_NAME', 'saved_models')
 mongo_username=os.environ.get('MONGO_USERNAME', 'admin')
 mongo_password=os.environ.get('MONGO_PASSWORD', 'admin')
 postgres_host = os.environ.get('POSTGRES_HOST', 'localhost')
@@ -30,7 +33,7 @@ def prod_count_action(db) -> CountDetectedObjects:
         obj= CountPostgresRepo(host=postgres_host, port=postgres_port, database=postgres_db, user_name=postgres_username,password=postgres_password)
     else:
         raise "Unknown DB Specifications"
-    return CountDetectedObjects(TFSObjectDetector(tfs_host, tfs_port, model_name),
+    return CountDetectedObjects(TFSObjectDetector(tfs_host, tfs_port, tf_model_name),
                                obj)
 
 def get_count_action() -> CountDetectedObjects:

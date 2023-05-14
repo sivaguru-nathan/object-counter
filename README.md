@@ -37,14 +37,14 @@ POSTGRES_DB='prod_counter'
 
 #Tf serve configrations
 TFS_PORT=8501
-MODEL_NAME="rfcn"  
-OMP_NUM_THREADS=4 
-TENSORFLOW_INTER_OP_PARALLELISM=2  
-TENSORFLOW_INTRA_OP_PARALLELISM=4 
-MODEL_BASE_PATH="/models"
+TF_MODEL_NAME="rfcn"  
+TF_OMP_NUM_THREADS=4 
+TF_TENSORFLOW_INTER_OP_PARALLELISM=2  
+TF_TENSORFLOW_INTRA_OP_PARALLELISM=4 
+TF_MODEL_BASE_PATH="/models"
 
 #Model File Path Configurations
-LOCAL_MODEL_PATH="/C/Users/a_s_g/Videos/tasks/object-counter/tmp/models"
+TF_LOCAL_MODEL_PATH="/C/Users/a_s_g/Videos/tasks/object-counter/tmp/models"
 ```
 
 
