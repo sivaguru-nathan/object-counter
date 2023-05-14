@@ -1,6 +1,6 @@
 import os
 
-from counter.adapters.count_repo import CountMongoDBRepo, CountInMemoryRepo
+from counter.adapters.count_repo import CountMongoDBRepo, CountInMemoryRepo, CountPostgresRepo
 from counter.adapters.object_detector import TFSObjectDetector, FakeObjectDetector
 from counter.domain.actions import CountDetectedObjects
 
@@ -19,16 +19,22 @@ postgres_username=os.environ.get('POSTGRES_USERNAME', 'admin')
 postgres_password=os.environ.get('POSTGRES_PASSWORD', 'admin')
 
 
-def dev_count_action() -> CountDetectedObjects:
+def dev_count_action(*args) -> CountDetectedObjects:
     return CountDetectedObjects(FakeObjectDetector(), CountInMemoryRepo())
 
 
-def prod_count_action() -> CountDetectedObjects:
-    
+def prod_count_action(db) -> CountDetectedObjects:
+    if db=="mongo":
+        obj= CountMongoDBRepo(host=mongo_host, port=mongo_port, database=mongo_db, user_name=mongo_username,password=mongo_password)
+    elif db=="postgres":
+        obj= CountPostgresRepo(host=postgres_host, port=postgres_port, database=postgres_db, user_name=postgres_username,password=postgres_password)
+    else:
+        raise "Unknown DB Specifications"
     return CountDetectedObjects(TFSObjectDetector(tfs_host, tfs_port, model_name),
-                                CountMongoDBRepo(host=mongo_host, port=mongo_port, database=mongo_db, user_name=mongo_username,password=mongo_password))
+                               obj)
 
 def get_count_action() -> CountDetectedObjects:
     env = os.environ.get('ENV', 'dev')
+    db = os.environ.get('DB', 'mongo')
     count_action_fn = f"{env}_count_action"
-    return globals()[count_action_fn]()
+    return globals()[count_action_fn](db)

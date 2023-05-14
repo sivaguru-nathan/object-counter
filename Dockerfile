@@ -6,6 +6,4 @@ ADD . /object_counter
 
 RUN pip3 install -r requirements.txt
 
-ENV ENV=prod
-
 CMD ["python","-u", "-m", "counter.entrypoints.webapp"]
