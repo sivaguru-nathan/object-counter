@@ -33,7 +33,23 @@ mv model.py tmp/models/torch/fasterrcnn/fasterrcnn.py
 torch-model-archiver --model-name fasterrcnn --version 1.0 --model-file tmp/models/torch/fasterrcnn/fasterrcnn.py --serialized-file tmp/models/torch/fasterrcnn/fasterrcnn.pth --handler object_detector
 mv fasterrcnn.mar tmp/models/torch/fasterrcnn/
 ```
+## Config file for torchserve
+```
+create a file config.properties with below configuration
 
+inference_address=http://0.0.0.0:8080
+management_address=http://0.0.0.0:8081
+metrics_address=http://0.0.0.0:8082
+number_of_netty_threads=4
+netty_client_thread=4
+default_workers_per_model=1
+max_request_size=26214400
+max_response_size=26214400
+cors_allowed_origin=*
+cors_allowed_methods=*
+cors_allowed_headers=*
+ 
+```
 
 ## Setup Environment Varibles
 
