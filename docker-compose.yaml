@@ -12,7 +12,7 @@ services:
     - TFS_HOST=tf-serving
     - TFS_PORT=${TFS_PORT}
     - TF_MODEL_NAME=${TF_MODEL_NAME}
-    - PT_HOST=192.168.29.85
+    - PT_HOST=torch-serving
     - PT_PORT=${PT_PORT}
     - PT_MODEL_NAME=${PT_MODEL_NAME}
     - MONGO_HOST=mongo

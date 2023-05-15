@@ -113,6 +113,8 @@ docker-compose up
 ## Run the tests
 
 ```
+Go inside app container using docker exec command and run
+
 pytest
 
 ```
